@@ -5,6 +5,10 @@ import numpy as np
 from PIL import Image
 
 def convert_and_rename_images(directory):
+    """
+    @param:
+        directory :str: chemin vers le dossier ou se trouve les images a rename
+    """
     # Liste tous les fichiers du répertoire spécifié
     number = 0
     for filename in os.listdir(directory):
@@ -50,6 +54,10 @@ directory = "./imgs_test/kiana"
 #convert_and_rename_images(directory)
 
 def anti_doublon(directory):
+    """
+    @param:
+        directory :str: chemin du dossier ou l'on veut enlever les doublons
+    """
     for fileref in os.listdir(directory):
         img_ref_path = os.path.join(directory, fileref)
         for filetest in os.listdir(directory):

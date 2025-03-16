@@ -407,6 +407,6 @@ def ssd_anime_face_detect(image_path, model_path):
         score = dets[k, 4]
         print(xmin,xmax,ymin,ymax)
         # print('{:s} {:.3f} {:.1f} {:.1f} {:.1f} {:.1f}\n'.format(image_path, score, xmin, ymin, xmax, ymax))
-        cv2.rectangle(imgOrig, (int(xmin), int(ymin)), (int(xmax), int(ymax)), (255, 0, 255), 5)
+        #cv2.rectangle(imgOrig, (int(xmin), int(ymin)), (int(xmax), int(ymax)), (255, 0, 255), 5)
     # cv2.imwrite(f'../result/ssd_anime_face_detect_{image_path[-5]}.jpg', imgOrig)
-    return imgOrig
+    return dets

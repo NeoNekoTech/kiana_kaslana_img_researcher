@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import filedialog, messagebox, simpledialog
+from tkinter import filedialog, messagebox
 from utilitaire.rename_files import rename_files
 from utilitaire.copie_test import copier_images
 from NNT_tools import convert_and_rename_images, anti_doublon
@@ -9,29 +9,17 @@ class UtilitaireApp:
         self.root = root
         self.root.title("Utilitaire d'Images")
 
-        # Bouton pour choisir une commande
-        self.command_button = tk.Button(root, text="Choisir une commande", command=self.choose_command)
-        self.command_button.pack(pady=10)
+        # Bouton pour renommer les fichiers
+        self.rename_button = tk.Button(root, text="Renommer les fichiers", command=self.rename_files)
+        self.rename_button.pack(pady=10)
 
-    def choose_command(self):
-        # Liste des commandes disponibles
-        commands = {
-            "Renommer les fichiers": self.rename_files,
-            "Copier les images": self.copy_images,
-            "Supprimer les doublons": self.remove_duplicates
-        }
+        # Bouton pour copier les images
+        self.copy_button = tk.Button(root, text="Copier les images", command=self.copy_images)
+        self.copy_button.pack(pady=10)
 
-        # Demander à l'utilisateur de choisir une commande
-        command_name = simpledialog.askstring(
-            "Choisir une commande",
-            "Entrez une commande :\n- Renommer les fichiers\n- Copier les images\n- Supprimer les doublons"
-        )
-
-        if command_name in commands:
-            # Exécuter la commande choisie
-            commands[command_name]()
-        else:
-            messagebox.showerror("Erreur", "Commande invalide. Veuillez réessayer.")
+        # Bouton pour supprimer les doublons
+        self.deduplicate_button = tk.Button(root, text="Supprimer les doublons", command=self.remove_duplicates)
+        self.deduplicate_button.pack(pady=10)
 
     def rename_files(self):
         directory = filedialog.askdirectory(title="Sélectionnez un dossier pour renommer les fichiers")

@@ -12,3 +12,4 @@ dependencies:
     - yoloface
     - gdown
     - ultralytics
+    - huggingface-hub

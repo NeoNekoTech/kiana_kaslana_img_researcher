@@ -1,3 +1,5 @@
 ./venv
 ./Tests
 Tests
+faces_detected
+imgs_test

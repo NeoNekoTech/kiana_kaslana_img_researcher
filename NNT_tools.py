@@ -3,62 +3,84 @@ import re
 import numpy as np 
 from PIL import Image
 
+def resize_image(img, size=(780, 780)):
+    """
+    Redimensionne une image à une taille spécifique en gardant les proportions
+    @param:
+        img: Image PIL à redimensionner
+        size: tuple (width, height) taille désirée
+    @return: Image PIL redimensionnée
+    """
+    ratio = min(size[0]/img.size[0], size[1]/img.size[1])
+    new_size = tuple([int(x*ratio) for x in img.size])
+    img = img.resize(new_size, Image.Resampling.LANCZOS)
+    
+    # Créer une nouvelle image avec fond blanc
+    new_img = Image.new("RGB", size, (255, 255, 255))
+    # Coller l'image redimensionnée au centre
+    offset = ((size[0] - new_size[0]) // 2,
+             (size[1] - new_size[1]) // 2)
+    new_img.paste(img, offset)
+    return new_img
+
 def convert_and_rename_images(directory):
     """
     @param:
         directory :str: chemin vers le dossier ou se trouve les images a rename
     """
-    # Liste tous les fichiers du répertoire spécifié
+    # Obtenir le nom du dossier
+    folder_name = os.path.basename(directory).replace('_crop', '')
     number = 0
+    
     for filename in os.listdir(directory):
-        # On ne prend que les fichiers avec une extension d'image
-        if filename.lower().endswith(('.jpg', '.jpeg', '.bmp', '.gif', '.tiff')):
-            # Création du chemin complet du fichier
+        if filename.lower().endswith(('.jpg', '.jpeg', '.png', '.bmp', '.gif', '.tiff')):
             filepath = os.path.join(directory, filename)
             
-            # Ouverture de l'image
-            with Image.open(filepath) as img:
-                # On crée le nouveau nom de fichier avec l'extension PNG
-                base_filename = os.path.splitext(filename)[0]
-                new_filename = base_filename + ".png"
-                new_filepath = os.path.join(directory, new_filename)
-                
-                # Conversion de l'image en PNG et sauvegarde
-                img.save(new_filepath, "PNG")
-                print(f"Image {filename} convertie et sauvegardée sous {new_filename}")
-                
-                # Utilisation d'une expression régulière pour extraire le numéro du fichier
-                new_number = number + 1  # Incrémente le numéro
+            try:
+                with Image.open(filepath) as img:
+                    # Convertir en RGB si nécessaire
+                    if img.mode != 'RGB':
+                        img = img.convert('RGB')
                     
-                # Nouvelle nomenclature
-                new_base_filename = f"images{new_number:05d}.png"
-                new_filepath_renamed = os.path.join(directory, new_base_filename)
-
-                # Vérification si le fichier existe déjà, et incrémentation si nécessaire
-                while os.path.exists(new_filepath_renamed):
-                    new_number += 1
-                    new_base_filename = f"images{new_number:05d}.png"
-                    new_filepath_renamed = os.path.join(directory, new_base_filename)
+                    # Redimensionner l'image
+                    img = resize_image(img, (780, 780))
                     
-                # Renommer le fichier
-                os.rename(new_filepath, new_filepath_renamed)
-                print(f"Image renommée en {new_base_filename}")
+                    # Créer le nouveau nom de fichier avec le nom du dossier
+                    new_number = number + 1
+                    new_base_filename = f"{folder_name}_{new_number:05d}.png"
+                    new_filepath = os.path.join(directory, new_base_filename)
                     
-                # Supprimer l'ancien fichier (source)
-                os.remove(filepath)
-                print(f"Ancien fichier supprimé : {filename}")
-
-
+                    # Vérifier si le fichier existe déjà
+                    while os.path.exists(new_filepath):
+                        new_number += 1
+                        new_base_filename = f"{folder_name}_{new_number:05d}.png"
+                        new_filepath = os.path.join(directory, new_base_filename)
+                    
+                    # Sauvegarder l'image redimensionnée
+                    img.save(new_filepath, "PNG", quality=95)
+                    print(f"Image {filename} convertie et sauvegardée sous {new_base_filename}")
+                    
+                    # Supprimer l'ancien fichier si différent
+                    if filepath != new_filepath:
+                        os.remove(filepath)
+                        print(f"Ancien fichier supprimé : {filename}")
+                    
+                    number = new_number
+                    
+            except Exception as e:
+                print(f"Erreur lors du traitement de {filename}: {str(e)}")
+                continue
 
 def anti_doublon(directory):
     """
     @param:
-        directory :str: chemin du dossier ou l'on veut enlever les doublons
+        directory :str: chemin du dossier où l'on veut enlever les doublons
     """
-    for fileref in os.listdir(directory):
+    files = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
+    for fileref in files:
         img_ref_path = os.path.join(directory, fileref)
-        for filetest in os.listdir(directory):
-            if fileref!=filetest:
+        for filetest in files:
+            if fileref != filetest:
                 img_test_path = os.path.join(directory, filetest)
                 try:
                     with open(img_ref_path, "rb") as img1, open(img_test_path, "rb") as img2:
@@ -67,11 +89,29 @@ def anti_doublon(directory):
                             img1.close()
                             img2.close()
                             os.remove(img_test_path)
-                except FileNotFoundError:
+                except (FileNotFoundError, PermissionError):
                     pass
 
-# Spécifie le répertoire contenant tes images
-directory = "./imgs_test/autre/Ryuu"
-#convert_and_rename_images(directory)
+def process_all_directories(base_directory, convert=False):
+    """
+    Traite tous les dossiers dans imgs_test et ses sous-dossiers
+    @param:
+        base_directory :str: chemin du dossier racine (imgs_test)
+        convert :bool: si True, convertit aussi les images en PNG
+    """
+    # Vérifier si le dossier existe
+    if not os.path.exists(base_directory):
+        print(f"Le dossier {base_directory} n'existe pas.")
+        return
 
-anti_doublon(directory)
+    # Traiter tous les sous-dossiers
+    for root, dirs, files in os.walk(base_directory):
+        print(f"Traitement du dossier: {root}")
+        if files:  # Ne traiter que s'il y a des fichiers
+            if convert:
+                convert_and_rename_images(root)
+            anti_doublon(root)
+
+# Pour utiliser avec la conversion :
+base_directory = "./faces_detected"
+process_all_directories(base_directory, convert=True)

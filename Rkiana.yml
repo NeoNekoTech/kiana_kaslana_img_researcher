@@ -1,0 +1,12 @@
+name: Rkiana
+channels:
+  - default
+  - conda-forge
+dependencies:
+  - python=3.8
+  - numpy
+  - opencv
+  - pillow
+  - pip:
+    - yoloface
+    

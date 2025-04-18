@@ -46,9 +46,9 @@ def copier_images(source_dossier_kiana, source_dossier_autres, base_destination,
             shutil.copy(chemin_source, chemin_destination)
             print(f"Image {os.path.basename(image)} copiée dans le dossier Autres (tests_{taille}).")
 
-""" # Utilisation du script
+# Utilisation du script
 source_dossier_kiana = "./imgs_test/kiana"  # Remplace par le chemin de ton dossier contenant les images de Kiana
 source_dossier_autres = "./imgs_test/autre"  # Remplace par le chemin du dossier contenant plusieurs sous-dossiers pour les images "autres"
 base_destination = "Tests"  # Dossier de base où les sous-dossiers seront créés (tests_100, tests_200, etc.)
 
-copier_images(source_dossier_kiana, source_dossier_autres, base_destination) """
+copier_images(source_dossier_kiana, source_dossier_autres, base_destination)

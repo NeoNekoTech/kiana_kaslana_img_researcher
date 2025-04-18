@@ -48,9 +48,7 @@ def convert_and_rename_images(directory):
                 os.remove(filepath)
                 print(f"Ancien fichier supprimé : {filename}")
 
-# Spécifie le répertoire contenant tes images
-directory = "./imgs_test/kiana"
-#convert_and_rename_images(directory)
+
 
 def anti_doublon(directory):
     """
@@ -72,4 +70,8 @@ def anti_doublon(directory):
                 except FileNotFoundError:
                     pass
 
-#anti_doublon(directory)
+# Spécifie le répertoire contenant tes images
+directory = "./imgs_test/autre/Ryuu"
+#convert_and_rename_images(directory)
+
+anti_doublon(directory)

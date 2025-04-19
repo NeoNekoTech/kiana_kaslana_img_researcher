@@ -2,12 +2,17 @@ name: Rkiana
 channels:
   - default
   - conda-forge
+  - pytorch
+  - nvidia
 dependencies:
   - python=3.8
   - numpy
   - opencv
   - pillow
   - ipython
+  - pytorch
+  - pytorch-cuda=11.8
+  - torchvision
   - pip:
     - yoloface
     - gdown

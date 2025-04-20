@@ -1,0 +1,589 @@
+
+<html>
+<head>
+    <style>
+    
+    /* Styles de base */
+    body {
+        font-family: 'Segoe UI', Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f5f5f5;
+    }
+
+    /* Container principal */
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background-color: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    }
+
+    /* En-têtes */
+    h1 {
+        color: #2c3e50;
+        text-align: center;
+        margin-bottom: 30px;
+        padding-bottom: 15px;
+        border-bottom: 3px solid #3498db;
+    }
+
+    h2 {
+        color: #34495e;
+        margin-top: 30px;
+        padding-left: 10px;
+        border-left: 4px solid #3498db;
+    }
+
+    /* Dashboard */
+    .dashboard {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin: 20px 0;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+
+    .big-number {
+        font-size: 36px;
+        font-weight: bold;
+        color: #2c3e50;
+        margin: 10px 0;
+    }
+
+    .stat-label {
+        color: #7f8c8d;
+        font-size: 14px;
+        text-transform: uppercase;
+    }
+
+    /* Boîte de résumé */
+    .summary-box {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 20px 0;
+        border: 1px solid #dee2e6;
+    }
+
+    .accuracy {
+        font-size: 24px;
+        color: #2c3e50;
+        text-align: center;
+        margin: 20px 0;
+    }
+
+    .stats-img {
+        max-width: 600px;
+        display: block;
+        margin: 30px auto;
+        border-radius: 8px;
+        box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+
+    /* Grille de prédictions */
+    .prediction-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 15px;
+        margin: 20px 0;
+    }
+
+    .prediction-card {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .prediction-card.correct {
+        border-left: 4px solid #2ecc71;
+    }
+
+    .prediction-card.incorrect {
+        border-left: 4px solid #e74c3c;
+    }
+
+    /* Images */
+    .image-container {
+        max-width: 150px;
+        margin: 10px auto;
+        text-align: center;
+    }
+
+    .result-image {
+        max-width: 100%;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    /* Probabilités */
+    .probs-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 10px;
+        padding: 10px;
+    }
+
+    .prob-item {
+        font-size: 0.9em;
+        border: 1px solid #dee2e6;
+        padding: 8px;
+        border-radius: 5px;
+        transition: all 0.3s ease;
+        background-color: white;
+    }
+
+    .prob-item:hover {
+        transform: scale(1.02);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .prob-item strong {
+        color: #2c3e50;
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    /* Tableau */
+    table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 20px 0;
+        background-color: white;
+    }
+
+    th {
+        background-color: #3498db;
+        color: white;
+        padding: 12px;
+        text-align: left;
+    }
+
+    td {
+        padding: 10px;
+        border-bottom: 1px solid #dee2e6;
+        max-width: 300px;
+    }
+
+    tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    /* États */
+    .correct {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .incorrect {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
+    /* Boutons */
+    .analyze-btn {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #3498db;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        margin: 20px 0;
+        transition: background-color 0.3s;
+    }
+
+    .analyze-btn:hover {
+        background-color: #2980b9;
+    }
+    
+    .prob-value {
+        font-size: 1.2em;
+        color: #2c3e50;
+        font-weight: bold;
+    }
+    
+    .prob-target {
+        color: #27ae60;
+        font-size: 0.9em;
+        font-style: italic;
+    }
+    
+    .probs-container {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        padding: 10px;
+    }
+    
+    .prob-item {
+        flex: 1;
+        max-width: 150px;
+        text-align: center;
+    }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Rapport d'Analyse d'Images - 20/04/2025 à 13:38</h1>
+        
+        <div class="dashboard">
+            <div class="stat-card">
+                <div class="stat-label">Précision Globale</div>
+                <div class="big-number">16.7%</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Images Analysées</div>
+                <div class="big-number">12</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Prédictions Correctes</div>
+                <div class="big-number">2</div>
+            </div>
+        </div>
+
+        <div class="summary-box">
+                <h2>Visualisations</h2>
+                <img src="/static/rapports/site\static\rapports\rapport_analyse_images_20-04-2025_13h38\rapport/rapport.png" class="stats-img" alt="Statistiques">
+            </div>
+
+        <h2>Résultats Détaillés</h2>
+        <table border="1" class="dataframe table">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Image</th>
+      <th>Label_Attendu</th>
+      <th>Prediction</th>
+      <th>Correct</th>
+      <th>Probabilites</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td><div class="image-container"><img src="/static/images/furina_test_1.jpg" class="result-image"><br>furina_test_1.jpg</div></td>
+      <td>Furina_crop</td>
+      <td>kiana_crop</td>
+      <td>❌</td>
+      <td><div class='probs-container'>
+                <div class='prob-item' style='background-color: #ffffff; padding: 5px; margin: 2px; border-radius: 3px;'>
+                    <strong>kiana_crop</strong><br>
+                    <span class="prob-value">Probabilité: 45.88%</span><br>
+                    
+                </div>
+            
+                <div class='prob-item' style='background-color: #e8f5e9; padding: 5px; margin: 2px; border-radius: 3px;'>
+                    <strong>Furina_crop</strong><br>
+                    <span class="prob-value">Probabilité: 37.59%</span><br>
+                    <span class="prob-target">(Classe attendue)</span>
+                </div>
+            
+                <div class='prob-item' style='background-color: #ffffff; padding: 5px; margin: 2px; border-radius: 3px;'>
+                    <strong>Emilia_crop</strong><br>
+                    <span class="prob-value">Probabilité: 9.60%</span><br>
+                    
+                </div>
+            </div></td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td><div class="image-container"><img src="/static/images/furina_test_2.jpg" class="result-image"><br>furina_test_2.jpg</div></td>
+      <td>Furina_crop</td>
+      <td>Emilia_crop</td>
+      <td>❌</td>
+      <td><div class='probs-container'>
+                <div class='prob-item' style='background-color: #ffffff; padding: 5px; margin: 2px; border-radius: 3px;'>
+                    <strong>Emilia_crop</strong><br>
+                    <span class="prob-value">Probabilité: 33.08%</span><br>
+                    
+                </div>
+            
+                <div class='prob-item' style='background-color: #e8f5e9; padding: 5px; margin: 2px; border-radius: 3px;'>
+                    <strong>Furina_crop</strong><br>
+                    <span class="prob-value">Probabilité: 30.82%</span><br>
+                    <span class="prob-target">(Classe attendue)</span>
+                </div>
+            
+                <div class='prob-item' style='background-color: #ffffff; padding: 5px; margin: 2px; border-radius: 3px;'>
+                    <strong>kiana_crop</strong><br>
+                    <span class="prob-value">Probabilité: 23.20%</span><br>
+                    
+                </div>
+            </div></td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td><div class="image-container"><img src="/static/images/furina_test_3.png" class="result-image"><br>furina_test_3.png</div></td>
+      <td>Furina_crop</td>
+      <td>Emilia_crop</td>
+      <td>❌</td>
+      <td><div class='probs-container'>
+                <div class='prob-item' style='background-color: #ffffff; padding: 5px; margin: 2px; border-radius: 3px;'>
+                    <strong>Emilia_crop</strong><br>
+                    <span class="prob-value">Probabilité: 64.31%</span><br>
+                    
+                </div>
+            
+                <div class='prob-item' style='background-color: #ffffff; padding: 5px; margin: 2px; border-radius: 3px;'>
+                    <strong>kiana_crop</strong><br>
+                    <span class="prob-value">Probabilité: 12.40%</span><br>
+                    
+                </div>
+            
+                <div class='prob-item' style='background-color: #ffffff; padding: 5px; margin: 2px; border-radius: 3px;'>
+                    <strong>Bell cranel_crop</strong><br>
+                    <span class="prob-value">Probabilité: 8.01%</span><br>
+                    
+                </div>
+            </div></td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td><div class="image-container"><img src="/static/images/furina_test_4.png" class="result-image"><br>furina_test_4.png</div></td>
+      <td>Furina_crop</td>
+      <td>Sung_crop</td>
+      <td>❌</td>
+      <td><div class='probs-container'>
+                <div class='prob-item' style='background-color: #ffffff; padding: 5px; margin: 2px; border-radius: 3px;'>
+                    <strong>Sung_crop</strong><br>
+                    <span class="prob-value">Probabilité: 57.85%</span><br>
+                    
+                </div>
+            
+                <div class='prob-item' style='background-color: #ffffff; padding: 5px; margin: 2px; border-radius: 3px;'>
+                    <strong>Raiden_crop</strong><br>
+                    <span class="prob-value">Probabilité: 9.86%</span><br>
+                    
+                </div>
+            
+                <div class='prob-item' style='background-color: #e8f5e9; padding: 5px; margin: 2px; border-radius: 3px;'>
+                    <strong>Furina_crop</strong><br>
+                    <span class="prob-value">Probabilité: 7.91%</span><br>
+                    <span class="prob-target">(Classe attendue)</span>
+                </div>
+            </div></td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td><div class="image-container"><img src="/static/images/furina_test_5.jpg" class="result-image"><br>furina_test_5.jpg</div></td>
+      <td>Furina_crop</td>
+      <td>Sung_crop</td>
+      <td>❌</td>
+      <td><div class='probs-container'>
+                <div class='prob-item' style='background-color: #ffffff; padding: 5px; margin: 2px; border-radius: 3px;'>
+                    <strong>Sung_crop</strong><br>
+                    <span class="prob-value">Probabilité: 96.55%</span><br>
+                    
+                </div>
+            
+                <div class='prob-item' style='background-color: #ffffff; padding: 5px; margin: 2px; border-radius: 3px;'>
+                    <strong>Chae In_crop</strong><br>
+                    <span class="prob-value">Probabilité: 1.55%</span><br>
+                    
+                </div>
+            
+                <div class='prob-item' style='background-color: #e8f5e9; padding: 5px; margin: 2px; border-radius: 3px;'>
+                    <strong>Furina_crop</strong><br>
+                    <span class="prob-value">Probabilité: 0.56%</span><br>
+                    <span class="prob-target">(Classe attendue)</span>
+                </div>
+            </div></td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td><div class="image-container"><img src="/static/images/kiana_test_1.jpg" class="result-image"><br>kiana_test_1.jpg</div></td>
+      <td>kiana_crop</td>
+      <td>Emilia_crop</td>
+      <td>❌</td>
+      <td><div class='probs-container'>
+                <div class='prob-item' style='background-color: #ffffff; padding: 5px; margin: 2px; border-radius: 3px;'>
+                    <strong>Emilia_crop</strong><br>
+                    <span class="prob-value">Probabilité: 38.88%</span><br>
+                    
+                </div>
+            
+                <div class='prob-item' style='background-color: #ffffff; padding: 5px; margin: 2px; border-radius: 3px;'>
+                    <strong>Furina_crop</strong><br>
+                    <span class="prob-value">Probabilité: 26.68%</span><br>
+                    
+                </div>
+            
+                <div class='prob-item' style='background-color: #e8f5e9; padding: 5px; margin: 2px; border-radius: 3px;'>
+                    <strong>kiana_crop</strong><br>
+                    <span class="prob-value">Probabilité: 22.12%</span><br>
+                    <span class="prob-target">(Classe attendue)</span>
+                </div>
+            </div></td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td><div class="image-container"><img src="/static/images/kiana_test_2.jpg" class="result-image"><br>kiana_test_2.jpg</div></td>
+      <td>kiana_crop</td>
+      <td>Furina_crop</td>
+      <td>❌</td>
+      <td><div class='probs-container'>
+                <div class='prob-item' style='background-color: #ffffff; padding: 5px; margin: 2px; border-radius: 3px;'>
+                    <strong>Furina_crop</strong><br>
+                    <span class="prob-value">Probabilité: 47.53%</span><br>
+                    
+                </div>
+            
+                <div class='prob-item' style='background-color: #e8f5e9; padding: 5px; margin: 2px; border-radius: 3px;'>
+                    <strong>kiana_crop</strong><br>
+                    <span class="prob-value">Probabilité: 29.49%</span><br>
+                    <span class="prob-target">(Classe attendue)</span>
+                </div>
+            
+                <div class='prob-item' style='background-color: #ffffff; padding: 5px; margin: 2px; border-radius: 3px;'>
+                    <strong>Bell cranel_crop</strong><br>
+                    <span class="prob-value">Probabilité: 14.04%</span><br>
+                    
+                </div>
+            </div></td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td><div class="image-container"><img src="/static/images/kiana_test_3.jpg" class="result-image"><br>kiana_test_3.jpg</div></td>
+      <td>kiana_crop</td>
+      <td>kiana_crop</td>
+      <td>✅</td>
+      <td><div class='probs-container'>
+                <div class='prob-item' style='background-color: #e8f5e9; padding: 5px; margin: 2px; border-radius: 3px;'>
+                    <strong>kiana_crop</strong><br>
+                    <span class="prob-value">Probabilité: 90.00%</span><br>
+                    <span class="prob-target">(Classe attendue)</span>
+                </div>
+            
+                <div class='prob-item' style='background-color: #ffffff; padding: 5px; margin: 2px; border-radius: 3px;'>
+                    <strong>Bell cranel_crop</strong><br>
+                    <span class="prob-value">Probabilité: 4.31%</span><br>
+                    
+                </div>
+            
+                <div class='prob-item' style='background-color: #ffffff; padding: 5px; margin: 2px; border-radius: 3px;'>
+                    <strong>Furina_crop</strong><br>
+                    <span class="prob-value">Probabilité: 2.63%</span><br>
+                    
+                </div>
+            </div></td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td><div class="image-container"><img src="/static/images/kiana_test_4.png" class="result-image"><br>kiana_test_4.png</div></td>
+      <td>kiana_crop</td>
+      <td>kiana_crop</td>
+      <td>✅</td>
+      <td><div class='probs-container'>
+                <div class='prob-item' style='background-color: #e8f5e9; padding: 5px; margin: 2px; border-radius: 3px;'>
+                    <strong>kiana_crop</strong><br>
+                    <span class="prob-value">Probabilité: 97.88%</span><br>
+                    <span class="prob-target">(Classe attendue)</span>
+                </div>
+            
+                <div class='prob-item' style='background-color: #ffffff; padding: 5px; margin: 2px; border-radius: 3px;'>
+                    <strong>Furina_crop</strong><br>
+                    <span class="prob-value">Probabilité: 2.00%</span><br>
+                    
+                </div>
+            
+                <div class='prob-item' style='background-color: #ffffff; padding: 5px; margin: 2px; border-radius: 3px;'>
+                    <strong>Emilia_crop</strong><br>
+                    <span class="prob-value">Probabilité: 0.08%</span><br>
+                    
+                </div>
+            </div></td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td><div class="image-container"><img src="/static/images/kiana_test_5.png" class="result-image"><br>kiana_test_5.png</div></td>
+      <td>kiana_crop</td>
+      <td>Furina_crop</td>
+      <td>❌</td>
+      <td><div class='probs-container'>
+                <div class='prob-item' style='background-color: #ffffff; padding: 5px; margin: 2px; border-radius: 3px;'>
+                    <strong>Furina_crop</strong><br>
+                    <span class="prob-value">Probabilité: 81.77%</span><br>
+                    
+                </div>
+            
+                <div class='prob-item' style='background-color: #e8f5e9; padding: 5px; margin: 2px; border-radius: 3px;'>
+                    <strong>kiana_crop</strong><br>
+                    <span class="prob-value">Probabilité: 11.64%</span><br>
+                    <span class="prob-target">(Classe attendue)</span>
+                </div>
+            
+                <div class='prob-item' style='background-color: #ffffff; padding: 5px; margin: 2px; border-radius: 3px;'>
+                    <strong>Emilia_crop</strong><br>
+                    <span class="prob-value">Probabilité: 3.07%</span><br>
+                    
+                </div>
+            </div></td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td><div class="image-container"><img src="/static/images/lumine_test_1.png" class="result-image"><br>lumine_test_1.png</div></td>
+      <td>Lumine_crop</td>
+      <td>Emilia_crop</td>
+      <td>❌</td>
+      <td><div class='probs-container'>
+                <div class='prob-item' style='background-color: #ffffff; padding: 5px; margin: 2px; border-radius: 3px;'>
+                    <strong>Emilia_crop</strong><br>
+                    <span class="prob-value">Probabilité: 55.00%</span><br>
+                    
+                </div>
+            
+                <div class='prob-item' style='background-color: #ffffff; padding: 5px; margin: 2px; border-radius: 3px;'>
+                    <strong>Furina_crop</strong><br>
+                    <span class="prob-value">Probabilité: 20.30%</span><br>
+                    
+                </div>
+            
+                <div class='prob-item' style='background-color: #e8f5e9; padding: 5px; margin: 2px; border-radius: 3px;'>
+                    <strong>Lumine_crop</strong><br>
+                    <span class="prob-value">Probabilité: 14.02%</span><br>
+                    <span class="prob-target">(Classe attendue)</span>
+                </div>
+            </div></td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td><div class="image-container"><img src="/static/images/sparkel_test_1.jpg" class="result-image"><br>sparkel_test_1.jpg</div></td>
+      <td>sparkel</td>
+      <td>Houshou Marine_crop</td>
+      <td>❌</td>
+      <td><div class='probs-container'>
+                <div class='prob-item' style='background-color: #ffffff; padding: 5px; margin: 2px; border-radius: 3px;'>
+                    <strong>Houshou Marine_crop</strong><br>
+                    <span class="prob-value">Probabilité: 24.23%</span><br>
+                    
+                </div>
+            
+                <div class='prob-item' style='background-color: #ffffff; padding: 5px; margin: 2px; border-radius: 3px;'>
+                    <strong>Hua Tao_crop</strong><br>
+                    <span class="prob-value">Probabilité: 22.82%</span><br>
+                    
+                </div>
+            
+                <div class='prob-item' style='background-color: #ffffff; padding: 5px; margin: 2px; border-radius: 3px;'>
+                    <strong>Megumin_crop</strong><br>
+                    <span class="prob-value">Probabilité: 15.34%</span><br>
+                    
+                </div>
+            </div></td>
+    </tr>
+  </tbody>
+</table>
+    </div>
+</body>
+</html>

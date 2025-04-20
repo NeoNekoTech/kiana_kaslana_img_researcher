@@ -1,5 +1,6 @@
 ./venv
 ./Tests
 Tests
-faces_detected
-imgs_test
+test
+dataset
+jeu_de_validation

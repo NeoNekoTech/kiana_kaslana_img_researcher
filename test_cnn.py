@@ -10,9 +10,48 @@ import os
 import json
 from pathlib import Path
 import matplotlib.pyplot as plt
+from ultralytics import YOLO
+from huggingface_hub import hf_hub_download
+from PIL import Image
 
 from test_image import Kclassifier
 
+
+def get_head(image_path):
+    model_path = hf_hub_download(repo_id="Bingsu/adetailer", filename="face_yolov8s.pt")
+    # Charger le modèle de détection de visages anime
+    model = YOLO(model_path)
+    original_image = Image.open(image_path)
+    original_image.verify()  # Vérifier que l'image est valide
+                    
+    # Réouvrir l'image car verify() la ferme
+    original_image = Image.open(image_path)
+                    
+    # Faire la détection des visages
+    results = model.predict(
+                        source=image_path,
+                        save=False,
+                        conf=0.3,
+                        iou=0.5
+                    )
+    
+    all_faces = []
+
+    for i, result in enumerate(results):
+        boxes = result.boxes
+        for j, box in enumerate(boxes):
+            try:
+                # Récupérer les coordonnées
+                coordinates = box.xyxy[0].tolist()
+                x1, y1, x2, y2 = map(int, coordinates)
+                                
+                # Recadrer l'image et convertir en RGB
+                face_image = original_image.crop((x1, y1, x2, y2)).convert('RGB')
+                all_faces.append(face_image)
+            except Exception as e:
+                print(f"Erreur lors du traitement du visage dans {image_path}: {str(e)}")
+                continue
+    return all_faces
 
 def test_single_image(image_path):
     # Configuration des transformations
@@ -24,38 +63,39 @@ def test_single_image(image_path):
     # Chargement du modèle
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model = Kclassifier(num_classes=14) 
-    model.load_state_dict(torch.load("face_classifier_model.pth"))
-    model = model.to(device)
+    model.load_state_dict(torch.load("face_classifier_model.pth", map_location=torch.device(device)))
+    #model = model.to(device)
     model.eval()
     
+    all_faces = get_head(image_path)
     # Chargement et transformation de l'image
-    image = Image.open(image_path).convert('RGB')
-    image_tensor = transform(image).unsqueeze(0).to(device)
-    
-    # Prédiction
-    with torch.no_grad():
-        output = model(image_tensor)
-        _, predicted = torch.max(output.data, 1)
+    for image in all_faces:
+        image_tensor = transform(image).unsqueeze(0).to(device)
         
-    # Chargement des noms de classes
-    dataset = datasets.ImageFolder("faces_detected")
-    class_names = dataset.classes
-    
-    # Affichage du résultat
-    predicted_class = class_names[predicted.item()]
-    print(f"L'image est classée comme : {predicted_class}")
-    
-    # Affichage des probabilités pour chaque classe
-    probabilities = F.softmax(output, dim=1)[0]
-    for i, prob in enumerate(probabilities):
-        print(f"{class_names[i]}: {prob.item()*100:.2f}%")
+        # Prédiction
+        with torch.no_grad():
+            output = model(image_tensor)
+            _, predicted = torch.max(output.data, 1)
+            
+        # Chargement des noms de classes
+        dataset = datasets.ImageFolder("dataset")
+        class_names = dataset.classes
         
-    # Affichage de l'image
-    plt.figure(figsize=(6, 6))
-    plt.imshow(image)
-    plt.title(f"Prédiction: {predicted_class}")
-    plt.axis('off')
-    plt.show()
+        # Affichage du résultat
+        predicted_class = class_names[predicted.item()]
+        print(f"L'image est classée comme : {predicted_class}")
+        
+        # Affichage des probabilités pour chaque classe
+        probabilities = F.softmax(output, dim=1)[0]
+        for i, prob in enumerate(probabilities):
+            print(f"{class_names[i]}: {prob.item()*100:.2f}%")
+            
+        # Affichage de l'image
+        plt.figure(figsize=(6, 6))
+        plt.imshow(image)
+        plt.title(f"Prédiction: {predicted_class}")
+        plt.axis('off')
+        plt.show()
 
 def plot_training_stats(training_stats):
     epochs = training_stats['epochs']
@@ -110,7 +150,7 @@ def create_model_and_train():
     training_stats_file = checkpoint_dir / "training_stats.json"
 
     # Chargement des données
-    dataset = datasets.ImageFolder("faces_detected", transform=transform)
+    dataset = datasets.ImageFolder("dataset", transform=transform)
     train_dataset, test_dataset = torch.utils.data.random_split(
         dataset, 
         [0.8, 0.2], 
@@ -311,7 +351,7 @@ def create_model_and_train():
     print("Entraînement terminé!")
 
     # Sauvegarde du modèle final
-    torch.save(model.state_dict(), "face_classifier_model.pth")
+    torch.save(model, "CNN.pth")
     print("Modèle final sauvegardé!")
     
     plot_training_stats(training_stats)
@@ -344,8 +384,10 @@ def create_model_and_train():
 if __name__ == '__main__':
     """ mp.freeze_support()
     create_model_and_train() """
-    test_single_image(r"imgs_test\autre\kiana\kiana_4.jpeg") 
+
+    test_single_image(r"jeu_de_validation\autre\Bell cranel\Bell cranel_14.png")
+    #get_head(r"jeu_de_validation\autre\Bell cranel\Bell cranel_14.png")
     # OU
-    test_single_image("imgs_test/autre/kiana/kiana_4.jpeg")   
+    #test_single_image("imgs_test/autre/kiana/kiana_4.jpeg")   
     # OU
-    test_single_image("imgs_test\\autre\\kiana\\kiana_4.jpeg")
+    #test_single_image("imgs_test\\autre\\kiana\\kiana_4.jpeg")

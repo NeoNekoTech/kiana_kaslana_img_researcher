@@ -1,3 +1,4 @@
+from PIL import Image
 import torch
 import torch.nn as nn 
 import torch.nn.functional as F
@@ -8,6 +9,92 @@ import torch.optim as optim
 import os
 import json
 from pathlib import Path
+import matplotlib.pyplot as plt
+
+from test_image import Kclassifier
+
+
+def test_single_image(image_path):
+    # Configuration des transformations
+    transform = transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+    ])
+    
+    # Chargement du modèle
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    model = Kclassifier(num_classes=14) 
+    model.load_state_dict(torch.load("face_classifier_model.pth"))
+    model = model.to(device)
+    model.eval()
+    
+    # Chargement et transformation de l'image
+    image = Image.open(image_path).convert('RGB')
+    image_tensor = transform(image).unsqueeze(0).to(device)
+    
+    # Prédiction
+    with torch.no_grad():
+        output = model(image_tensor)
+        _, predicted = torch.max(output.data, 1)
+        
+    # Chargement des noms de classes
+    dataset = datasets.ImageFolder("faces_detected")
+    class_names = dataset.classes
+    
+    # Affichage du résultat
+    predicted_class = class_names[predicted.item()]
+    print(f"L'image est classée comme : {predicted_class}")
+    
+    # Affichage des probabilités pour chaque classe
+    probabilities = F.softmax(output, dim=1)[0]
+    for i, prob in enumerate(probabilities):
+        print(f"{class_names[i]}: {prob.item()*100:.2f}%")
+        
+    # Affichage de l'image
+    plt.figure(figsize=(6, 6))
+    plt.imshow(image)
+    plt.title(f"Prédiction: {predicted_class}")
+    plt.axis('off')
+    plt.show()
+
+def plot_training_stats(training_stats):
+    epochs = training_stats['epochs']
+    train_loss = training_stats['train_loss']
+    val_loss = training_stats['val_loss']
+    train_acc = training_stats['train_acc']
+    val_acc = training_stats['val_acc']
+
+    plt.figure(figsize=(15,10))
+    
+    plt.subplot(2,2,1)
+    plt.plot(epochs, train_loss)
+    plt.title("Train Loss")
+    plt.xlabel("Epochs")
+    plt.ylabel("Loss")
+
+    plt.subplot(2,2,2)
+    # Les données de validation sont collectées tous les 5 epochs
+    val_epochs = list(range(5, len(epochs) + 1, 5))
+    plt.plot(val_epochs, val_loss)
+    plt.title("Validation Loss")
+    plt.xlabel("Epochs")
+    plt.ylabel("Loss")
+
+    plt.subplot(2,2,3)
+    plt.plot(epochs, train_acc)
+    plt.title("Train Accuracy")
+    plt.xlabel("Epochs")
+    plt.ylabel("Accuracy (%)")
+
+    plt.subplot(2,2,4)
+    plt.plot(val_epochs, val_acc)
+    plt.title("Validation Accuracy")
+    plt.xlabel("Epochs")
+    plt.ylabel("Accuracy (%)")
+
+    plt.tight_layout()
+    plt.savefig('training_plots.png')
+    plt.close()
 
 def create_model_and_train():
     # Configuration des transformations
@@ -52,7 +139,7 @@ def create_model_and_train():
     )
 
     class Kclassifier(nn.Module):
-        def __init__(self, num_classes=13):
+        def __init__(self, num_classes=14):
             super().__init__()
             self.conv1 = nn.Conv2d(3, 16, kernel_size=9, padding=4)
             self.pool = nn.MaxPool2d(2, 2)
@@ -226,6 +313,9 @@ def create_model_and_train():
     # Sauvegarde du modèle final
     torch.save(model.state_dict(), "face_classifier_model.pth")
     print("Modèle final sauvegardé!")
+    
+    plot_training_stats(training_stats)
+    print("Graphiques sauvegardés dans 'training_plots.png'")
 
     # Test final
     model.eval()
@@ -248,6 +338,14 @@ def create_model_and_train():
     test_acc = 100 * correct / total
     print(f'Résultats finaux - Loss: {test_loss:.4f}, Accuracy: {test_acc:.2f}%')
 
+
+    
+
 if __name__ == '__main__':
-    mp.freeze_support()
-    create_model_and_train()
+    """ mp.freeze_support()
+    create_model_and_train() """
+    test_single_image(r"imgs_test\autre\kiana\kiana_4.jpeg") 
+    # OU
+    test_single_image("imgs_test/autre/kiana/kiana_4.jpeg")   
+    # OU
+    test_single_image("imgs_test\\autre\\kiana\\kiana_4.jpeg")

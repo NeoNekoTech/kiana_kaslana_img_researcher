@@ -17,7 +17,7 @@ from PIL import Image
 from test_image import Kclassifier
 
 
-def get_head(image_path):
+def  get_head(image_path):
     model_path = hf_hub_download(repo_id="Bingsu/adetailer", filename="face_yolov8s.pt")
     # Charger le modèle de détection de visages anime
     model = YOLO(model_path)
@@ -63,14 +63,15 @@ def test_single_image(image_path):
     # Chargement du modèle
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model = Kclassifier(num_classes=14) 
-    model.load_state_dict(torch.load("face_classifier_model.pth", map_location=torch.device(device)))
-    #model = model.to(device)
+    model.load_state_dict(torch.load("face_classifier_model.pth", map_location=device))
+    model = model.to(device)  # Déplacer le modèle sur le device
     model.eval()
     
     all_faces = get_head(image_path)
     # Chargement et transformation de l'image
     for image in all_faces:
-        image_tensor = transform(image).unsqueeze(0).to(device)
+        image_tensor = transform(image).unsqueeze(0)
+        image_tensor = image_tensor.to(device)
         
         # Prédiction
         with torch.no_grad():
@@ -385,7 +386,7 @@ if __name__ == '__main__':
     """ mp.freeze_support()
     create_model_and_train() """
 
-    test_single_image(r"jeu_de_validation\autre\Bell cranel\Bell cranel_14.png")
+    test_single_image(r"C:\Users\Alexis\OneDrive\Images\0f7e03f47325f64689713b64429a6930.jpg")
     #get_head(r"jeu_de_validation\autre\Bell cranel\Bell cranel_14.png")
     # OU
     #test_single_image("imgs_test/autre/kiana/kiana_4.jpeg")   

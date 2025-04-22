@@ -34,12 +34,12 @@ def create_test_report(test_folder):
     
     # Chargement du modèle
     model = Kclassifier(num_classes=14)
-    model.load_state_dict(torch.load("face_classifier_model.pth"))
+    model.load_state_dict(torch.load("CNN.pth", weights_only=True, map_location=device))
     model.to(device)
     model.eval()
     
     # Chargement des noms de classes
-    dataset = datasets.ImageFolder("faces_detected")
+    dataset = datasets.ImageFolder("dataset")
     class_names = dataset.classes
     
     results = []
